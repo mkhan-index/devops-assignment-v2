@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: default
+
+resources:
+  - ../../base
+
+images:
+  - name: hello-api
+    newName: hello-api
+    newTag: v1.0.0
+
+patches:
+  - path: serviceaccount-patch.yaml
+    target:
+      kind: ServiceAccount
+      name: app-serviceaccount
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: go-app
+      spec:
+        type: LoadBalancer
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: go-app
+      spec:
+        template:
+          spec:
+            containers:
+            - name: go-app
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1Gi
